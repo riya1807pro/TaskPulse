@@ -11,6 +11,8 @@ try {
   const corsOptions = {
     origin: FRONTEND_URL,
     optionsSuccessStatus: 200,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedMembers : ["Content-type", "Authorization"]
   };
 
   const app = express();
