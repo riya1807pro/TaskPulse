@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
 
 const rawPort = process.env.PORT;
 const parsedPort = Number(rawPort);
@@ -17,6 +18,13 @@ try {
 
   const app = express();
   app.use(cors(corsOptions));
+  
+  mongoose.connect(process.env.MONGO_URI).then(()=> {
+    console.log('Connected to MongoDB');
+  }).catch(error => {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  })
 
   app.get('/', (req, res) => {
     res.send('Welcome to taskPulse');
