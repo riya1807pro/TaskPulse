@@ -2,20 +2,26 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Login from "./pages/auth/Login"
 import SignUp from "./pages/auth/SignUp"
 import PrivateRoute from "./routes/privateRoute"
-import CreateTasks from "./pages/admin/CreateTasks"
-import ManageTasks from "./pages/admin/ManageTasks"
-import ManageUsers from "./pages/admin/ManageUsers"
-import MyTasks from "./pages/users/MyTasks"
-import TaskDeatils from "./pages/users/TaskDeatils"
-import UserDashboard from "./pages/users/UserDashboard"
-import Dashboard from "./pages/admin/Dashboard"
+import CreateTasks from "./pages/admin/createTasks"
+import ManageTasks from "./pages/admin//manageTasks"
+import ManageUsers from "./pages/admin/manageUsers"
+import MyTasks from "./pages/users/myTasks"
+import TaskDeatils from "./pages/users/taskDeatils"
+import UserDashboard from "./pages/users/userDashboard"
+import Dashboard from "./pages/admin/dashboard"
+import HomePage from "./pages/home"
+import NotFound from "./pages/NotFound"
+import ErrorBoundary from "./components/ErrorBoundary"
 
 function App() {
   return (
    <div>
     <BrowserRouter>
+    <ErrorBoundary>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signUp" element={<SignUp />} />
 
       {/* admin routes */}
@@ -33,6 +39,7 @@ function App() {
         <Route path="/users/userDashboard" element={<UserDashboard/>} />
       </Route>
       </Routes>
+    </ErrorBoundary>
     </BrowserRouter>
    </div>
   )

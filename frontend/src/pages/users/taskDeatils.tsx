@@ -2,8 +2,7 @@
 
 const TaskDeatils = () => {
   return (
-    <div>
-      Task details
+    <div className="flex justify-ites-center text-2xl font-extrabold font-serif bg-green-300">      Task details
     </div>
   )
 }
