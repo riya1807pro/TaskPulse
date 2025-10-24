@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user.modals.js';
+import { ErrorHandler } from '../utils/error.js';
 
 export const signUp = async (req, res,next) => {
     const {name, email, password, profilePicUrl, adminJoinCode} = req.body;
@@ -11,12 +12,12 @@ if(
     name===""|| 
     email===""||
     password===""
-){ res.jsom({message: "Please provide all required fields"}); }
+) return next(ErrorHandler(400, "Name, email and password are required"));
 
 const alreadyExists = await User.findOne({email});
 
 if(alreadyExists){
-    return res.status(400).json({message: "User with this email already exists"});
+    return next(ErrorHandler(400, "User with this email already exists"));
 }
 
 
@@ -40,8 +41,7 @@ try {
     await newUser.save();
     return res.status(201).json({message: "User created successfully"});
 } catch (error) {
-    res.status(400).json({message: "Error creating user", error: error.message});
-    next(error);
+   return nextError(ErrorHandler(500, "Internal server error"));
 }
 
 }

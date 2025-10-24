@@ -10,6 +10,7 @@ const parsedPort = Number(rawPort);
 const PORT = Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
+const app = express();
 try {
   const corsOptions = {
     origin: FRONTEND_URL,
@@ -19,7 +20,6 @@ try {
     credentials: true,
   };
 
-  const app = express();
 
   // IMPORTANT: body parsers BEFORE routes
   app.use(express.json());
@@ -54,3 +54,13 @@ try {
   process.exit(1);
 }
 
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  res.statusCode = statusCode;
+  res.json({
+    success: false,
+    statusCode,
+    message
+  });
+})
