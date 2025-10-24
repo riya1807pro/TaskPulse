@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 
 import authRouter from "./routes/auth.router.js";
 
@@ -23,6 +24,7 @@ try {
 
   // IMPORTANT: body parsers BEFORE routes
   app.use(express.json());
+  app.use(cookieParser());
   app.use(express.urlencoded({ extended: true }));
 
   app.use(cors(corsOptions));
