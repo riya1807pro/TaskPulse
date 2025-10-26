@@ -102,7 +102,7 @@ export const userProfile = async (req, res, next) => {
 
 export const updateUserProfile = async (req, res, next) => {
   try {
-    const user = req.User.id;
+    const user = await User.findById(req.user.id)
 
     if(!user){
       return next(ErrorHandler(404, "User not found!"))
@@ -110,7 +110,6 @@ export const updateUserProfile = async (req, res, next) => {
 
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    user.profileImageUrl = req.body.profileImageUrl || user.profileImageUrl;
 
     if(req.body.password){
       user.password = bcryptjs.hashSync(req.body.password, 10);
