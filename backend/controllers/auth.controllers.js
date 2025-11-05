@@ -2,6 +2,7 @@ import  User from "../models/user.modals.js"
 import bcryptjs from "bcryptjs"
 import { ErrorHandler } from "../utils/error.js"
 import jwt from "jsonwebtoken"
+import path from "path"
 
 export const signUp = async (req, res, next) => {
   const { name, email, password, profileImageUrl, adminJoinCode } = req.body
@@ -123,5 +124,20 @@ export const updateUserProfile = async (req, res, next) => {
 
   } catch (error) {
     
+  }
+}
+
+export const uploadImage = async (req, res, next) => {
+  try {
+    if (!req.file) return next(ErrorHandler(400, "Image not found"));
+
+    // safe filename (already set by multer)
+    const filename = path.basename(req.file.filename);
+    const imageURL = `${req.protocol}://${req.get("host")}/uploads/${filename}`;
+
+    return res.status(200).json({ success: true, imageURL });
+  } catch (error) {
+    console.error("uploadImage error:", error);
+    return next(ErrorHandler(500, "Internal server error"));
   }
 }

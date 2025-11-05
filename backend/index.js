@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
+import path from "path";
 
 import authRouter from "./routes/auth.router.js";
 
@@ -66,3 +67,24 @@ app.use((err, req, res, next) => {
     message
   });
 })
+
+// simple logger (helps debug incoming requests)
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.originalUrl);
+  next();
+});
+
+// serve uploads folder
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+// make sure CORS allows credentials if you use cookies
+app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+
+// global error handler (avoid double send)
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  console.error("Global error:", err && err.stack ? err.stack : err);
+  const status = err?.statusCode || 500;
+  const message = err?.message || "Internal server error";
+  res.status(status).json({ success: false, statusCode: status, message });
+});
