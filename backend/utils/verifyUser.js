@@ -14,8 +14,13 @@ export const verifyUser = (req, res, next) => {
     const authHeader = req.headers.authorization || "";
     const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
-    // Accept token_access (used by SignIn) or token/accessToken as fallback
-    const cookieToken = req.cookies?.token_access || req.cookies?.token || req.cookies?.accessToken || null;
+    // Accept common cookie names including access_token (underscore)
+    const cookieToken =
+      req.cookies?.access_token ||
+      req.cookies?.token_access ||
+      req.cookies?.token ||
+      req.cookies?.accessToken ||
+      null;
 
     const token = bearerToken || cookieToken;
     if (!token) return next(ErrorHandler(401, "Unauthorized: no token provided"));

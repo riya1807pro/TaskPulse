@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+
+const todoSchema = new mongoose.Schema({
+    text:{
+        type: String,
+        require: true,
+    },
+    completed:{
+        type: Boolean,
+        default: false,
+    }
+})
+
 const TaskSchema = new mongoose.Schema({
     title:{
         type: String,
@@ -50,14 +62,3 @@ const TaskSchema = new mongoose.Schema({
 
 const Task = mongoose.model("Task", TaskSchema);
 export default Task;
-
-const todoSchema = new mongoose.Schema({
-    text:{
-        type: String,
-        require: true,
-    },
-    completed:{
-        type: Boolean,
-        default: false,
-    }
-})

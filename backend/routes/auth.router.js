@@ -1,5 +1,5 @@
 import express from 'express';
-import { SignIn, signUp, updateUserProfile, uploadImage, userProfile } from '../controllers/auth.controllers.js';
+import { SignIn, signUp, updateUserProfile, uploadImage, userProfile } from '../controllers/auth.controller.js';
 import { verifyUser } from '../utils/verifyUser.js';
 import uploads from '../utils/uploadImage.js';
 
