@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import path from "path";
 
 import authRouter from "./routes/auth.router.js";
+import taskRouter from "./routes/task.router.js";
 import userRouter from "./routes/user.Router.js";
 
 const rawPort = process.env.PORT;
@@ -46,6 +47,7 @@ try {
   // mount auth routes
   app.use("/api/auth", authRouter);
   app.use("/api/users",userRouter);
+  app.use("/api/tasks",taskRouter);
 
   // optional legacy compatibility if you previously used /sign-Up
   app.post('/sign-Up', (req, res) => res.redirect(307, '/api/auth/signUp'));
