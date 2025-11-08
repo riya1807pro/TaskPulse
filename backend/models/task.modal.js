@@ -1,64 +1,39 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
+const todoSchema = new Schema({
+  text: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+});
 
-const todoSchema = new mongoose.Schema({
-    text:{
-        type: String,
-        require: true,
-    },
-    completed:{
-        type: Boolean,
-        default: false,
-    }
-})
+const TaskSchema = new Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
 
-const TaskSchema = new mongoose.Schema({
-    title:{
-        type: String,
-        require: true,
+    status: {
+      type: String,
+      enum: ["pending", "in-progress", "completed"],
+      default: "pending",
     },
-    description:{
-        type: String,
-        require: true,
-    },
-    status:{
-        type: String,
-        enum: ['pending', 'in-progress', 'completed'],
-        default: 'pending',
-    },
-    dueDate:{
-        type: Date,
-        require: true,
-    },
-    assignedTo:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'user',
-        require: true,
-    },
-    priority:{
-        type: String,
-        enum: ['low', 'medium', 'high'],
-        default: 'medium',
-    },
-    createdBy :[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'user',
-            require: true,
-        }
-    ],
-    attachments:[
-        {
-            type: String,
-        }
-    ],
 
-    todoCheckList :[todoSchema],
-    progress : {
-        type: Number,
-        default: 0,
-    },
-},{timestamps: true})
+    dueDate: { type: Date },
 
-const Task = mongoose.model("Task", TaskSchema);
-export default Task;
+    // allow multiple assignees (array of ObjectId referencing the User model)
+    assignedTo: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
+
+    priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },
+
+    // createdBy usually a single user
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+
+    attachments: [{ type: String }],
+
+    todoCheckList: [todoSchema],
+
+    progress: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Task", TaskSchema);
