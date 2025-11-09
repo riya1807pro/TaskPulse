@@ -109,4 +109,18 @@ export const getTask = async (req, res, next) => {
   }
 }
 
+export const getTaskById = async (req, res, next) => {
+  try {
+    const id = req.params?.id || req.params?.taskId;
+    if (!id) return next(ErrorHandler(400, "Missing task id"));
+
+    const task = await Task.findById(id).populate("assignedTo", "name email profilePicUrl");
+    if (!task) return next(ErrorHandler(404, "Task not found"));
+
+    return res.status(200).json({ success: true, task });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export default createTask;
