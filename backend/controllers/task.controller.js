@@ -19,6 +19,16 @@ const createTask = async (req, res, next) => {
         return next(ErrorHandler(400, "assignedTo must be an array of User IDs"))
     }
 
+    // normalize todoCheckList: keep items that have non-empty text
+    const normalizedTodo = Array.isArray(todoCheckList)
+      ? todoCheckList
+          .map(item => ({
+            text: (item && item.text) ? String(item.text).trim() : "",
+            completed: !!(item && item.completed)
+          }))
+          .filter(i => i.text.length > 0)
+      : [];
+
     const task = await Task.create({
       title,
       description,
@@ -26,7 +36,7 @@ const createTask = async (req, res, next) => {
       dueDate,
       assignedTo,
       attachment,
-      todoCheckList,
+      todoCheckList: normalizedTodo,
       createdBy: req.user.id
     })
 
@@ -120,6 +130,59 @@ export const getTaskById = async (req, res, next) => {
     return res.status(200).json({ success: true, task });
   } catch (error) {
     return next(error);
+  }
+};
+
+const sanitizeTodoList = (list) => {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      // accept both item.text and legacy item.task
+      const rawText = item?.text ?? item?.task ?? "";
+      return {
+        text: String(rawText).trim(),
+        completed: !!item?.completed,
+      };
+    })
+    .filter((i) => i.text.length > 0);
+};
+
+export const updateTask = async (req, res, next) => {
+  try {
+    const id = req.params?.id;
+    if (!id) return next(ErrorHandler(400, "Missing task id"));
+
+    const task = await Task.findById(id);
+    if (!task) return next(ErrorHandler(404, "Task not found"));
+
+    // update fields
+    task.title = req.body.title ?? task.title;
+    task.description = req.body.description ?? task.description;
+    task.priority = req.body.priority ?? task.priority;
+    task.dueDate = req.body.dueDate ?? task.dueDate;
+
+    // If client provided todoCheckList, sanitize and set it.
+    if (req.body.todoCheckList) {
+      task.todoCheckList = sanitizeTodoList(req.body.todoCheckList);
+    } else {
+      // Always sanitize existing items to avoid validation errors from legacy data
+      task.todoCheckList = sanitizeTodoList(task.todoCheckList);
+    }
+
+    task.attachments = req.body.attachment ?? task.attachments;
+
+    if (req.body.assignedTo) {
+      if (!Array.isArray(req.body.assignedTo)) {
+        return next(ErrorHandler(400, "Assigned to must be an array of user ids"));
+      }
+      task.assignedTo = req.body.assignedTo;
+    }
+
+    const updatedTask = await task.save();
+
+    return res.status(200).json({ success: true, task: updatedTask });
+  } catch (err) {
+    next(err);
   }
 };
 
