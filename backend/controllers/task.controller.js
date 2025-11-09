@@ -186,4 +186,16 @@ export const updateTask = async (req, res, next) => {
   }
 };
 
+export const deleteTask = async (req, res, next) => {
+  const task = Task.findById(req.params?.id);
+
+  if (!task) {
+    next(ErrorHandler(404, "task not found"))
+  }
+
+  await task.deleteOne();
+
+  res.status(200).json("task deleted successfully!")
+}
+
 export default createTask;
