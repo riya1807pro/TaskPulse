@@ -220,7 +220,8 @@ export const updateTaskStatus = async (req, res, next) => {
 
     await task.save();
 
-    return res.status(200, {message: "task status updated"}, task)
+    return res.status(200).json({message: "task status updated"})
+
 
   } catch (error) {
     next(error) 
@@ -276,4 +277,4 @@ export const updateTodoChecklist = async (req ,res , next) => {
   } catch (error) {
     next(error);
   }
-}
+}                 
