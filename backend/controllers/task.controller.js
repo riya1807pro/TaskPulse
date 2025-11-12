@@ -198,4 +198,33 @@ export const deleteTask = async (req, res, next) => {
   res.status(200).json("task deleted successfully!")
 }
 
+export const updateTaskStatus = async (req, res, next) => {
+  try {
+       const id = req.params?.id;
+    if (!id) return next(ErrorHandler(400, "Missing task id"));
+
+    const task = await Task.findById(id);
+    if (!task) return next(ErrorHandler(404, "Task not found"));
+
+    const isAssigned = task.assignedTo.some((userId)=> userId.toString() === req.user.id.toString());
+
+    if (!isAssigned && req.user.role !== "admin") {
+      next(ErrorHandler(401, "unauthorized user"))
+    }
+
+    task.status = req.body.status || task.status;
+
+    if(task.status === "completed"){
+      task.todoCheckList.forEach((item)=> item.completed = true)
+    }
+
+    await task.save();
+
+    return res.status(200, {message: "task status updated"}, task)
+
+  } catch (error) {
+    next(error) 
+  }
+}
+
 export default createTask;
