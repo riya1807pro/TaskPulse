@@ -277,4 +277,75 @@ export const updateTodoChecklist = async (req ,res , next) => {
   } catch (error) {
     next(error);
   }
-}                 
+}
+
+export const getDashboardData = async (req, res, next) => {
+  try {
+    const totalCount = await Task.countDocuments();
+    const pendingTasks = await Task.countDocuments({status: "pending"});
+    const completedTasks = await Task.countDocuments({status: "completed"});
+    const overDueTasks = await Task.countDocuments({
+      status: {$ne: "completed"},
+      dueDate : {$lt : new Date()}
+    });
+
+    const tasksStatus = ["completed", "in-progress","pending" ];
+
+    const taskDistributionRaw = await Task.aggregate([
+      {
+        $group:{
+          _id:"$status",
+          count :{$sum : 1}
+        }
+      }
+    ])
+
+    const taskDistribution = tasksStatus.reduce((acc, status)=>{
+      const formattedKey = status.replace(/\s/g,"");
+
+      acc[formattedKey] = taskDistributionRaw.find((item)=> item._id === status)?.count || 0;
+
+      return acc;
+    },{})
+
+    taskDistribution["All"] = totalCount;
+
+    const taskPriorities = ["low", "medium", "high"];
+
+    const taskPriorityLevelRaw = await Task.aggregate([
+      {
+        $group:{
+          _id: "$priority",
+          count : {$sum: 1},
+        }
+      }
+    ]);
+
+    const taskPriorityLevel = taskPriorities.reduce((acc, priority)=>{
+      const formattedKey = priority.replace(/\s/g,"");
+      acc[formattedKey] = taskPriorityLevelRaw.find((item)=>item._id === priority)?.count || 0;
+
+      return acc;
+    },{});
+
+    const recentsTasks = await Task.find().sort({
+      createdBy: -1
+    }).limit(10).select("title status priority dueDate createdBy");
+
+    res.status(200).json({
+      statics:{
+        totalCount,
+        pendingTasks,
+        completedTasks,
+        overDueTasks
+      },charts:{
+        taskDistribution,
+        taskPriorityLevel
+      },
+      recentsTasks
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}

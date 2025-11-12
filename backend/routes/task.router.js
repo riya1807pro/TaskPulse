@@ -1,11 +1,12 @@
 import express from "express";
 import { adminOnly, verifyUser } from "../utils/verifyUser.js";
-import { createTask,deleteTask, getTask, getTaskById, updateTask, updateTaskStatus, updateTodoChecklist } from "../controllers/task.controller.js";
+import { createTask,deleteTask, getDashboardData, getTask, getTaskById, updateTask, updateTaskStatus, updateTodoChecklist } from "../controllers/task.controller.js";
 
 const router = express.Router();
 
 router.post("/create-task", verifyUser,adminOnly, createTask);
 router.get("/", verifyUser, getTask);
+router.get("/dashboard-data", verifyUser,adminOnly, getDashboardData);
 router.get("/:id", verifyUser, getTaskById);
 router.put('/:id', verifyUser , updateTask)
 router.delete('/:id', verifyUser ,adminOnly, deleteTask)
