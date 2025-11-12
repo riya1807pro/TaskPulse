@@ -1,7 +1,7 @@
 import { ErrorHandler } from "../utils/error.js";
 import Task from "../models/task.modal.js"
 
-const createTask = async (req, res, next) => {
+export const createTask = async (req, res, next) => {
   try {
     const {
       title,
@@ -227,4 +227,53 @@ export const updateTaskStatus = async (req, res, next) => {
   }
 }
 
-export default createTask;
+export const updateTodoChecklist = async (req ,res , next) => {
+  try {
+    if (!req.user || !req.user.id) return next(ErrorHandler(401, "Unauthorized"));
+
+    const id = req.params?.id;
+    if (!id) return next(ErrorHandler(400, "Missing task id"));
+
+    const task = await Task.findById(id);
+    if (!task) return next(ErrorHandler(404, "Task not found"));
+
+    // check if requester is assigned or is admin
+    const isAssigned = (task.assignedTo || []).some(u => u.toString() === req.user.id.toString());
+    if (!isAssigned && req.user.role !== "admin") {
+      return next(ErrorHandler(403, "You are not authorized to update the checklist"));
+    }
+
+    // sanitize incoming todoCheckList (accept both {text} and legacy {task})
+    const { todoCheckList } = req.body || {};
+    const sanitized = Array.isArray(todoCheckList)
+      ? todoCheckList
+          .map(item => ({
+            text: String(item?.text ?? item?.task ?? "").trim(),
+            completed: !!item?.completed,
+          }))
+          .filter(i => i.text.length > 0)
+      : task.todoCheckList || [];
+
+    task.todoCheckList = sanitized;
+
+    const completeCount = task.todoCheckList.filter(item => item.completed).length;
+    const totalCount = task.todoCheckList.length;
+    task.progress = totalCount > 0 ? Math.round((completeCount / totalCount) * 100) : 0;
+
+    // update status based on progress
+    if (task.progress === 100) task.status = "completed";
+    else if (task.progress > 0) task.status = "in-progress";
+    else task.status = "pending";
+
+    await task.save();
+
+    const updatedTask = await Task.findById(id).populate(
+      "assignedTo",
+      "name email profilePicUrl"
+    );
+
+    return res.status(200).json({ success: true, message: "Task checklist updated", task: updatedTask });
+  } catch (error) {
+    next(error);
+  }
+}
